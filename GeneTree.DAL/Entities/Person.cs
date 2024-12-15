@@ -14,8 +14,8 @@ namespace GeneTree.DAL.Entities
         public DateTime DateOfBirth { get; set; }
         public string Gender { get; set; }
 
-        public List<int> Children { get; set; } = new List<int>();  // List of child IDs
-        public List<int> Parents { get; set; } = new List<int>();    // List of parent IDs
+        public List<int> Children { get; set; } = new List<int>(); 
+        public List<int> Parents { get; set; } = new List<int>();   
 
         public int spouseId { get; set; }
 

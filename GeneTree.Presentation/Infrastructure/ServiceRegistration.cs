@@ -27,13 +27,12 @@ namespace GeneTree.Infrastructure
 
             if (repositoryType == "FileSystem")
             {
-                // File-based repositories
+                // Filebased repositories
                 services.AddSingleton<IPersonRepository>(
                     new FilePersonRepository(configuration["FileSystem:PersonFilePath"]));
             }
             else if (repositoryType == "Database")
             {
-                // Add DbContext for database repository
                // services.AddDbContext<TreeContext>(options =>
                 //    options.UseSqlite(configuration.GetConnectionString("DatabaseConnection")));
 

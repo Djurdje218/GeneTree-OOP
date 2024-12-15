@@ -26,10 +26,8 @@ namespace GeneTree.BLL.Service
         {
             try
             {
-                // Get all people (this fetches the people from the file)
                 var people = await _repository.GetAllPeopleAsync();
 
-                // Find the parent and child in the list
                 var parent = people.FirstOrDefault(p => p.Id == parentId);
                 var child = people.FirstOrDefault(p => p.Id == childId);
 
@@ -46,7 +44,6 @@ namespace GeneTree.BLL.Service
                 Console.WriteLine($"Before adding: Parent {parentId} Children: {string.Join(", ", parent.Children)}");
                 Console.WriteLine($"Before adding: Child {childId} Parents: {string.Join(", ", child.Parents)}");
 
-                // Check if the relationship already exists
                 if (parent.Children.Contains(childId))
                 {
                     throw new InvalidOperationException("This relationship already exists.");
@@ -65,7 +62,6 @@ namespace GeneTree.BLL.Service
             }
             catch (Exception ex)
             {
-                // Log the exception if needed
                 throw new InvalidOperationException($"Error while adding relationship: {ex.Message}", ex);
             }
         }
@@ -75,7 +71,6 @@ namespace GeneTree.BLL.Service
         {
             try
             {
-                // Retrieve all people from the repository
                 var people = await _repository.GetAllPeopleAsync();
 
                 var spouse1 = people.FirstOrDefault(p => p.Id == spouse1Id);
@@ -91,23 +86,19 @@ namespace GeneTree.BLL.Service
                     throw new ArgumentException($"Spouse 2 with ID {spouse2Id} not found.");
                 }
 
-                // Ensure no self-marriage
                 if (spouse1Id == spouse2Id)
                 {
                     throw new InvalidOperationException("A person cannot be their own spouse.");
                 }
 
-                // Ensure neither already has a spouse
                 if (spouse1.spouseId != 0 || spouse2.spouseId != 0)
                 {
                     throw new InvalidOperationException("One or both individuals are already married.");
                 }
 
-                // Establish spouse relationship
                 spouse1.spouseId = spouse2Id;
                 spouse2.spouseId = spouse1Id;
 
-                // Save changes back to the repository
                 await _repository.SaveChangesAsync(people);
 
                 Console.WriteLine($"Spouse relationship established: {spouse1.FullName} ↔ {spouse2.FullName}");
@@ -149,16 +140,16 @@ namespace GeneTree.BLL.Service
 
         private async Task<bool> IsAncestorAsync(Person ancestor, Person descendant)
         {
-            // Breadth-first search to check if ancestor is connected to descendant.
+            // Breadth first search to check if ancestor is connected to descendant.
             var queue = new Queue<Person>();
 
-            // Enqueue all parents of the descendant (converted from int IDs to Person objects)
+            
             foreach (var parentId in descendant.Parents)
             {
                 var parent = await _repository.GetPersonByIdAsync(parentId);
                 if (parent != null)
                 {
-                    queue.Enqueue(parent);  // Add parent to the queue for checking
+                    queue.Enqueue(parent); 
                 }
             }
 
@@ -170,13 +161,12 @@ namespace GeneTree.BLL.Service
                     return true;
                 }
 
-                // Add parents of the current person to the queue for further checking
                 foreach (var parentId in current.Parents)
                 {
                     var parent = await _repository.GetPersonByIdAsync(parentId);
                     if (parent != null)
                     {
-                        queue.Enqueue(parent);  // Add the parent to the queue for further checking
+                        queue.Enqueue(parent);  
                     }
                 }
             }
@@ -200,36 +190,35 @@ namespace GeneTree.BLL.Service
             }
 
             var treeBuilder = new StringBuilder();
-            var peopleById = people.ToDictionary(p => p.Id); // For quick lookup
-            var processed = new HashSet<int>(); // Tracks processed people to avoid duplicates
+            var peopleById = people.ToDictionary(p => p.Id);
+            var processed = new HashSet<int>(); 
 
             // Recursive method to build the tree
             void BuildTree(Person person, string indent, bool isLast)
             {
                 if (processed.Contains(person.Id))
-                    return; // Avoid processing the same person twice
+                    return; // avoid processing  same person twice
 
                 processed.Add(person.Id);
 
-                // Determine the spouse if available
                 var spouse = people.FirstOrDefault(p => p.Id == person.spouseId);
 
-                // Display the person and their spouse (if any)
+              
                 var connector = isLast ? "└── " : "├── ";
                 if (spouse != null && !processed.Contains(spouse.Id))
                 {
                     treeBuilder.AppendLine($"{indent}{connector}{person.FullName} (DOB: {person.DateOfBirth:yyyy-MM-dd}, Gender: {person.Gender})  {spouse.FullName} (DOB: {spouse.DateOfBirth:yyyy-MM-dd}, Gender: {spouse.Gender})");
-                    processed.Add(spouse.Id); // Mark spouse as processed
+                    processed.Add(spouse.Id); 
                 }
                 else
                 {
                     treeBuilder.AppendLine($"{indent}{connector}{person.FullName} (DOB: {person.DateOfBirth:yyyy-MM-dd}, Gender: {person.Gender})");
                 }
 
-                // Determine the indentation for children
+       
                 var childIndent = isLast ? "    " : "│   ";
 
-                // Find children and build their trees
+
                 var children = people.Where(p => p.Parents.Contains(person.Id)).ToList();
                 for (int i = 0; i < children.Count; i++)
                 {
@@ -237,7 +226,6 @@ namespace GeneTree.BLL.Service
                 }
             }
 
-            // Start building the tree from individuals without parents (roots)
             var roots = people.Where(p => !p.Parents.Any()).ToList();
             for (int i = 0; i < roots.Count; i++)
             {
@@ -259,23 +247,21 @@ namespace GeneTree.BLL.Service
 
             var relatives = new List<Person>();
 
-            // Fetch parents using their IDs
             foreach (var parentId in person.Parents)
             {
                 var parent = await _repository.GetPersonByIdAsync(parentId);
                 if (parent != null)
                 {
-                    relatives.Add(parent);  // Add parent to relatives list
+                    relatives.Add(parent);  
                 }
             }
 
-            // Fetch children using their IDs
             foreach (var childId in person.Children)
             {
                 var child = await _repository.GetPersonByIdAsync(childId);
                 if (child != null)
                 {
-                    relatives.Add(child);  // Add child to relatives list
+                    relatives.Add(child);  
                 }
             }
 

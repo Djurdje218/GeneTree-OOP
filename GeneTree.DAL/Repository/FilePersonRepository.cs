@@ -22,7 +22,7 @@ namespace GeneTree.DAL.Repository
             var people = await GetAllPeopleAsync();
             var peopleList = people.ToList();
 
-            // Generate a new ID
+            // Generate new ID
             person.Id = peopleList.Any() ? peopleList.Max(p => p.Id) + 1 : 1;
 
             peopleList.Add(person);
@@ -54,7 +54,6 @@ namespace GeneTree.DAL.Repository
         public async Task SaveChangesAsync()
         {
             var people = await GetAllPeopleAsync();
-            // Save the updated list of people back to the file
             await File.WriteAllTextAsync(_filePath, JsonSerializer.Serialize(people, new JsonSerializerOptions { WriteIndented = true }));
         }
 
@@ -62,7 +61,7 @@ namespace GeneTree.DAL.Repository
         {
             var jsonOptions = new JsonSerializerOptions
             {
-                WriteIndented = true // Pretty-print the JSON for readability
+                WriteIndented = true // Pretty print the JSON 
             };
 
             await File.WriteAllTextAsync(_filePath, JsonSerializer.Serialize(people, jsonOptions));
